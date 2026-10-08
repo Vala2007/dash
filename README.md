@@ -15,6 +15,7 @@ A continuación se describen los pasos para clonar el repositorio, configurar el
 Abre tu terminal o Anaconda Powershell Prompt y ejecuta:
 
 git clone https://github.com/Vala2007/dash.git
+
 cd dash
 
 ### 2. Crear y activar el entorno
