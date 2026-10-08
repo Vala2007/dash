@@ -20,7 +20,7 @@ cd dash
 ### 2. Crear y activar el entorno
 Crea un entorno aislado para evitar conflictos entre versiones de librerías:
 
-conda create --name dash_proyecto python=3.erdasemeolvido
+conda create --name dash_proyecto python=3.11
 conda activate dash_proyecto
 
 ### 3. Instalación de dependencias
