@@ -38,6 +38,19 @@ def cramers_v(x, y):
     return np.sqrt(chi2 / (n * (min(r, c) - 1)))
 
 
+pares_reales = {
+    var: tuple(sorted(df[var].dropna().unique()))
+    for var in vars_predictoras
+}
+
+grupos_vars = {
+    "f / t":     [v for v in vars_predictoras if pares_reales[v] == ("f", "t")],
+    "g / l":     [v for v in vars_predictoras if pares_reales[v] == ("g", "l")],
+    "n / t":     [v for v in vars_predictoras if pares_reales[v] == ("n", "t")],
+    "b / n / w": [v for v in vars_predictoras if pares_reales[v] == ("b", "n", "w")],
+}
+
+
 def figura_dona_target():
     tabla = df["class"].value_counts().reset_index()
     tabla.columns = ["class", "Frecuencia"]
@@ -61,14 +74,17 @@ def figura_dona_target():
     return fig
 
 
-def figura_donas_variables():
+def figura_donas_grupo(vars_grupo, titulo):
+    if len(vars_grupo) == 0:
+        return None
+
     n_cols = 2
-    n_filas = -(-len(vars_predictoras) // n_cols)
+    n_filas = -(-len(vars_grupo) // n_cols)
 
     fig = make_subplots(
         rows=n_filas, cols=n_cols,
         specs=[[{"type": "pie"} for _ in range(n_cols)] for _ in range(n_filas)],
-        subplot_titles=vars_predictoras,
+        subplot_titles=vars_grupo,
         vertical_spacing=0.005,
         horizontal_spacing=0.02,
     )
@@ -76,7 +92,7 @@ def figura_donas_variables():
     row = 1
     col = 1
 
-    for var in vars_predictoras:
+    for var in vars_grupo:
         tabla = df[var].value_counts().reset_index()
         tabla.columns = ["valor", "n"]
         colores_usar = [colores_personalizados.get(v, "#999999") for v in tabla["valor"]]
@@ -106,6 +122,7 @@ def figura_donas_variables():
             row += 1
 
     fig.update_layout(
+        title=dict(text=titulo, x=0.5, xanchor="center", font=dict(size=20)),
         height=350 * n_filas,
         showlegend=False,
         font=dict(size=14),
@@ -122,40 +139,39 @@ def figura_donas_variables():
 
 
 def figura_heatmap_class():
-    vars_todas = df.columns.tolist()
-    n_vars = len(vars_todas)
-    mat = np.zeros((n_vars, n_vars))
-
-    for i, v1 in enumerate(vars_todas):
-        for j, v2 in enumerate(vars_todas):
-            mat[i, j] = cramers_v(df[v1], df[v2])
+    asoc = pd.Series({
+        v: cramers_v(df[v], df["class"]) for v in vars_predictoras
+    }).sort_values(ascending=False)
 
     fig = go.Figure(data=go.Heatmap(
-        z=mat,
-        x=vars_todas,
-        y=vars_todas,
+        z=[asoc.values],
+        x=asoc.index,
+        y=["class"],
         colorscale="Blues",
         zmin=0, zmax=1,
-        text=np.round(mat, 2),
+        text=np.round(asoc.values, 2)[np.newaxis, :],
         texttemplate="%{text:.2f}",
-        textfont={"size": 8},
+        textfont={"size": 10.5},
         hoverongaps=False,
-        hovertemplate="<b>%{y}</b> ↔ <b>%{x}</b><br>Cramér's V: %{z:.3f}<extra></extra>",
+        hovertemplate="<b>%{x}</b><br>Cramér's V: %{z:.3f}<extra></extra>",
     ))
     fig.update_layout(
-        title="Matriz Cramér's V — KRKPA7",
-        height=700,
-        xaxis=dict(tickangle=90, tickfont=dict(size=8)),
-        yaxis=dict(tickfont=dict(size=8)),
-        margin=dict(l=50, r=50, t=80, b=120),
+        height=300,
+        xaxis=dict(tickangle=90, tickfont=dict(size=12)),
+        yaxis=dict(tickfont=dict(size=12)),
+        margin=dict(l=60, r=40, t=80, b=120),
+        coloraxis_colorbar=dict(
+            title="Cramér's V",
+            tickvals=[0, 0.25, 0.5, 0.75, 1],
+            ticktext=["0", "0.25", "0.5", "0.75", "1"],
+        ),
     )
     return fig
 
 
 def figura_top5_class():
-    vars_todas = df.columns.tolist()
     asoc = pd.Series({
-        v: cramers_v(df[v], df["class"]) for v in vars_todas if v != "class"
+        v: cramers_v(df[v], df["class"]) for v in vars_predictoras
     }).sort_values(ascending=False)
 
     top5 = asoc.head(5).reset_index()
@@ -365,15 +381,20 @@ def tabla_contingencia_completa():
 
 
 def layout():
-    
     fig_target = figura_dona_target()
-    fig_donas = figura_donas_variables()
     fig_heat_class = figura_heatmap_class()
     fig_top5_class = figura_top5_class()
     fig_barras = figura_barras_por_clase()
     fig_heat_pred = figura_heatmap_predictoras()
     fig_top5_pares = figura_top5_pares()
     tabla_cont = tabla_contingencia_completa()
+
+    figuras_grupos = []
+    for nombre, vars_grupo in grupos_vars.items():
+        if len(vars_grupo) > 0:
+            titulo = f"Variables con niveles {nombre} ({len(vars_grupo)})"
+            fig = figura_donas_grupo(vars_grupo, titulo)
+            figuras_grupos.append((nombre, fig))
 
     return dbc.Container([
 
@@ -395,8 +416,17 @@ def layout():
         html.H3("Análisis de las variables independientes"),
 
         dbc.Card(dbc.CardBody([
-            html.H5("Distribución de cada variable predictora", className="card-title"),
-            dcc.Graph(figure=fig_donas, config={"displayModeBar": False}),
+            html.H5("Distribución de cada variable predictora por grupo",
+                    className="card-title"),
+            *[
+                dbc.Card(
+                    dbc.CardBody([
+                        dcc.Graph(figure=fig, config={"displayModeBar": False}),
+                    ]),
+                    className="mb-4"
+                )
+                for nombre, fig in figuras_grupos
+            ],
             html.P(
                 "whxbp: la torre blanca ataca al peón negro en el 38% de las "
                 "posiciones. wxqsq: las blancas controlan la casilla de coronación "
@@ -428,15 +458,14 @@ def layout():
         html.H3("Análisis bivariado class vs independientes"),
 
         dbc.Row(dbc.Col(dbc.Card(dbc.CardBody([
-            html.H5("Matriz de asociación con class", className="card-title"),
+            html.H5("Relación de cada predictora con class (Cramér's V)",
+                    className="card-title"),
             dcc.Graph(figure=fig_heat_class, config={"displayModeBar": False}),
             html.P(
-                "El heatmap muestra la fuerza de la relación entre las variables "
-                "predictoras y la variable objetivo class. Los valores más altos "
+                "El heatmap muestra la fuerza de la relación entre cada variable "
+                "predictora y la variable objetivo class. Los valores más altos "
                 "(azul oscuro) indican una relación más fuerte con el resultado del "
-                "final de ajedrez. Los valores más bajos (blanco) sugieren que la "
-                "variable es prácticamente independiente de si la posición es "
-                "ganable o no."
+                "final de ajedrez."
             ),
         ]))), className="mb-4"),
 
@@ -450,20 +479,6 @@ def layout():
                 html.Li("wkxbp (0.233): rey blanco captura el peón negro."),
                 html.Li("katri (0.22): control del punto de intersección."),
             ]),
-        ]))), className="mb-4"),
-
-        dbc.Row(dbc.Col(dbc.Card(dbc.CardBody([
-            html.H5("Tabla de contingencia: class vs variables predictoras", className="card-title"),
-            dash_table.DataTable(
-                data=tabla_cont.to_dict("records"),
-                columns=[{"name": c, "id": c} for c in tabla_cont.columns],
-                style_table={"overflowX": "auto", "maxHeight": "500px", "overflowY": "auto"},
-                style_cell={"textAlign": "left", "padding": "6px", "fontSize": "12px"},
-                style_header={"fontWeight": "bold", "backgroundColor": "#F2E9E4"},
-                page_size=20,
-                sort_action="native",
-                filter_action="native",
-            ),
         ]))), className="mb-4"),
 
         dbc.Row(dbc.Col(dbc.Card(dbc.CardBody([

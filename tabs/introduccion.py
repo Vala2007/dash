@@ -232,9 +232,12 @@ def layout():
                 "sean categóricas, que las observaciones sean independientes y que "
                 "las frecuencias esperadas de la tabla de contingencia sean adecuadas "
                 "(al menos el 80 % de las celdas con frecuencia esperada ≥ 5). Cuando "
-                "alguna celda queda por debajo de ese umbral, se recomienda usar el "
-                "chi-cuadrado con simulación de Monte Carlo para evitar distorsiones "
-                "en el cálculo (Agresti, 2002)."
+                "alguna celda queda por debajo de ese umbral, el p-valor del chi-cuadrado "
+                "clásico pierde validez. En esos casos, si se requiere un contraste de "
+                "hipótesis, se recomienda usar chi-cuadrado con simulación de Monte Carlo "
+                "o la prueba exacta de Fisher para tablas 2×2 (Agresti, 2002). Sin embargo, "
+                "la V de Cramér como medida descriptiva se calcula directamente a partir "
+                "del estadístico chi-cuadrado observado, sin requerir corrección."
             ),
 
             html.P(
