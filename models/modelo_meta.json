@@ -1,0 +1,179 @@
+{
+  "clase_positiva": "won",
+  "variables": [
+    "wkblk",
+    "wknwy",
+    "wkna8",
+    "wkona",
+    "wkspr",
+    "wkxbq",
+    "wkxcr",
+    "wkxbp",
+    "whxbp",
+    "wxqsq",
+    "cntxt",
+    "dsopp",
+    "dwipd",
+    "katri",
+    "mulch",
+    "qxmsq",
+    "r2ar8",
+    "reskr",
+    "rimmx",
+    "rkxwp",
+    "rxmsq",
+    "simpl",
+    "skewr",
+    "skrxp",
+    "stlmt",
+    "thrsk",
+    "bkcti",
+    "bkna8",
+    "bknck",
+    "bkovl",
+    "bkpos",
+    "btoeg"
+  ],
+  "niveles": {
+    "wkblk": [
+      "f",
+      "t"
+    ],
+    "wknwy": [
+      "f",
+      "t"
+    ],
+    "wkna8": [
+      "f",
+      "t"
+    ],
+    "wkona": [
+      "f",
+      "t"
+    ],
+    "wkspr": [
+      "f",
+      "t"
+    ],
+    "wkxbq": [
+      "f",
+      "t"
+    ],
+    "wkxcr": [
+      "f",
+      "t"
+    ],
+    "wkxbp": [
+      "f",
+      "t"
+    ],
+    "whxbp": [
+      "f",
+      "t"
+    ],
+    "wxqsq": [
+      "f",
+      "t"
+    ],
+    "cntxt": [
+      "f",
+      "t"
+    ],
+    "dsopp": [
+      "f",
+      "t"
+    ],
+    "dwipd": [
+      "g",
+      "l"
+    ],
+    "katri": [
+      "b",
+      "n",
+      "w"
+    ],
+    "mulch": [
+      "f",
+      "t"
+    ],
+    "qxmsq": [
+      "f",
+      "t"
+    ],
+    "r2ar8": [
+      "f",
+      "t"
+    ],
+    "reskr": [
+      "f",
+      "t"
+    ],
+    "rimmx": [
+      "f",
+      "t"
+    ],
+    "rkxwp": [
+      "f",
+      "t"
+    ],
+    "rxmsq": [
+      "f",
+      "t"
+    ],
+    "simpl": [
+      "f",
+      "t"
+    ],
+    "skewr": [
+      "f",
+      "t"
+    ],
+    "skrxp": [
+      "f",
+      "t"
+    ],
+    "stlmt": [
+      "f",
+      "t"
+    ],
+    "thrsk": [
+      "f",
+      "t"
+    ],
+    "bkcti": [
+      "f",
+      "t"
+    ],
+    "bkna8": [
+      "f",
+      "t"
+    ],
+    "bknck": [
+      "f",
+      "t"
+    ],
+    "bkovl": [
+      "f",
+      "t"
+    ],
+    "bkpos": [
+      "f",
+      "t"
+    ],
+    "btoeg": [
+      "n",
+      "t"
+    ]
+  },
+  "metricas_test": {
+    "Accuracy": 0.9953,
+    "Precisión": 0.997,
+    "Recall": 0.994,
+    "F1": 0.9955,
+    "AUC-ROC": 0.9996
+  },
+  "ic95_accuracy": [
+    0.9890625,
+    1.0
+  ]
+}

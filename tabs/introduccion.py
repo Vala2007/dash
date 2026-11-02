@@ -1,11 +1,11 @@
 from dash import html, dcc, dash_table
 import dash_bootstrap_components as dbc
 import pandas as pd
-
+from components import stat_card, seccion
 
 VARIABLES_DATA = {
     "Variable": [
-        "wkblk", "wknwy", "wkna8", "wkona", "wkspr", "wkxbq", "wkxcr", "wkxbp",
+        "wkblk", "wknwy", "wkna8", "wkon8", "wkspr", "wkxbq", "wkxcr", "wkxbp",
         "whxbp", "wxqsq", "cntxt", "dsopp", "dwipd", "hdchk", "katri", "mulch",
         "qxmsq", "r2ar8", "reskd", "reskr", "rimmx", "rkxwp", "rxmsq", "simpl",
         "skach", "skewr", "skrxp", "spcop", "stlmt", "thrsk", "bkcti", "bkna8",
@@ -28,42 +28,42 @@ VARIABLES_DATA = {
         "Black King Position (potential skewer)", "Black to Egress",
     ],
     "Significado": [
-        "El rey blanco está en el camino de la torre blanca en una situación de doble ataque",
-        "El rey blanco obstruye el movimiento de la torre blanca hacia la casilla de coronación (a8)",
-        "El rey blanco está en la posición a8",
-        "El rey blanco está en la columna a",
-        "Puede el rey blanco apoyar a la torre blanca en una horquilla (fork)",
-        "El rey blanco es atacado por el peón negro promocionado",
-        "Puede el rey blanco atacar la casilla crítica (b7)",
-        "El rey blanco captura el peón negro",
-        "La torre blanca ataca al peón negro en dirección x<0, y=0",
-        "Una o más piezas blancas controlan la casilla de coronación (a8)",
-        "El rey negro está en un borde del tablero y no en a8",
-        "Están los reyes en oposición normal (separados por una casilla vacía en línea recta)",
-        "Distancia del rey blanco al punto de intersección de la torre blanca",
-        "Hay un jaque oculto sobre las negras",
-        "Algún rey controla el punto de intersección",
-        "Pueden las blancas renovar el jaque con ventaja",
-        "La casilla de mate es atacada por el peón negro promocionado",
-        "La torre blanca tiene acceso seguro a la columna A o a la fila 8",
-        "Puede el rey negro ser re-clavado (reskewered) a través de una clavada diferida",
-        "Puede la torre blanca sola renovar la amenaza de doble ataque",
-        "Puede la torre blanca ser capturada de forma inmediata y segura",
-        "La torre blanca amenaza al peón negro (solo en dirección x<0, y=0)",
-        "La torre blanca ataca una casilla de mate de forma segura",
-        "Se aplica un patrón muy simple (ahogado, clavada diferida o jaque perpetuo)",
-        "El rey negro puede ser clavado tras uno o más jaques de la torre blanca",
-        "Posibilidad de clavada (skewer)",
-        "La torre blanca logra una clavada o el rey blanco ataca el peón negro",
-        "Hay un patrón de oposición especial presente",
-        "El rey blanco está en ahogado, o el avance del peón negro fuerza el ahogado",
-        "Hay una amenaza de clavada (skewer) acechando",
-        "El rey negro puede controlar el punto de intersección",
-        "El rey negro está en a8",
-        "El rey negro está en jaque",
-        "El rey negro está sobrecargado y no puede cubrir los puntos de intersección de la torre blanca",
-        "El rey negro está en posición de posible clavada (skewer)",
-        "El rey negro está a una casilla del borde relevante",
+        "El rey blanco obstruye el camino de la torre blanca (bloquea su movimiento).",
+        "El rey blanco está en la columna 'a' o en el borde, limitando el movimiento de la torre.",
+        "El rey blanco está en la casilla a8.",
+        "El rey blanco está en la columna 'a'.",
+        "El rey blanco puede apoyar a la torre blanca en una horquilla (fork).",
+        "El rey blanco está siendo atacado por el peón promocionado.",
+        "El rey blanco ataca la casilla crítica (normalmente b7).",
+        "El rey blanco captura el peón negro.",
+        "La torre blanca ataca al peón negro.",
+        "Las blancas controlan la casilla de la dama (a8, casilla de coronación).",
+        "El rey negro está en un borde del tablero.",
+        "Los reyes están en oposición diagonal.",
+        "La distancia del rey negro al punto de intersección es mayor que dos (g=cerca, l=lejos).",
+        "Hay un jaque oculto (descubierto) contra el rey negro.",
+        "Algún rey controla el punto de intersección (n=ninguno, b=negro, w=blanco).",
+        "Hay múltiples jaques disponibles.",
+        "La casilla de la dama (a8) está siendo atacada.",
+        "La torre blanca tiene acceso a la columna 'a' o a la fila 8.",
+        "Re-clavada diferida.",
+        "La torre blanca puede renovar la clavada (skewer).",
+        "Se puede capturar la torre blanca de forma segura.", 
+        "La torre blanca captura el peón negro.",
+        "La torre blanca ataca la casilla de mate.",
+        "Se aplica un patrón simple (ahogado, etc).",
+        "Clavada (skewer) tras jaques.",
+        "Posibilidad de clavada (skewer) por parte de la torre.",
+        "La torre blanca hace una clavada o ataca el peón.",
+        "Oposición especial.",
+        "El rey blanco está ahogado o en riesgo de estarlo.",
+        "Amenaza de clavada (skewer).",
+        "El rey negro controla el punto de intersección.",
+        "El rey negro está en a8.",
+        "El rey negro está en jaque.",
+        "El rey negro está sobrecargado.",
+        "El rey negro está en posición vulnerable a una clavada.",
+        "El rey negro tiene vía de escape (egress).",
     ],
     "Niveles": [
         "t, f", "t, f", "t, f", "t, f", "t, f",
@@ -108,10 +108,9 @@ tabla_variables = pd.DataFrame(VARIABLES_DATA)
 
 def layout():
     return dbc.Container([
-
+ 
         # ---------- Contexto ----------
-        html.Div([
-            html.H2("Contexto"),
+        seccion("Contexto", [
             html.P(
                 "El ajedrez, además de ser un deporte, constituye un dominio clásico "
                 "para el estudio de la toma de decisiones y el razonamiento automático "
@@ -132,45 +131,32 @@ def layout():
                 "número de piezas se reduce y el juego se vuelve más teórico y preciso "
                 "(Nunn, 2010)."
             ),
-        ], className="krk-section"),
-
-                # ---------- Datos clave ----------
+        ]),
+ 
+        # ---------- Datos clave ----------
         html.Div([
             dbc.Row([
-                dbc.Col(html.Div([
-                    html.H4("3.196"),
-                    html.P("posiciones legales del final"),
-                ], className="krk-stat accent"), md=3),
-                dbc.Col(html.Div([
-                    html.H4("36"),
-                    html.P("variables categóricas por posición"),
-                ], className="krk-stat"), md=3),
-                dbc.Col(html.Div([
-                    html.H4("2"),
-                    html.P("clases: won / nowin"),
-                ], className="krk-stat warm"), md=3),
-                dbc.Col(html.Div([
-                    html.H4("1983"),
-                    html.P("Shapiro, University of Edinburgh"),
-                ], className="krk-stat"), md=3),
+                dbc.Col(stat_card("3.196", "posiciones del final"), xs=6, md=3),
+                dbc.Col(stat_card("36", "variables categóricas por posición"), xs=6, md=3),
+                dbc.Col(stat_card("2", "clases: won / nowin"), xs=6, md=3),
+                dbc.Col(stat_card("1983", "Shapiro, University of Edinburgh"), xs=6, md=3),
             ], className="g-3"),
         ], className="krk-section krk-section-alt"),
-
+ 
         # ---------- Objetivos ----------
-        html.Div([
-            html.H2("Objetivos"),
+        seccion("Objetivos", [
             html.H3("Objetivo general"),
             html.P(
                 "Analizar el comportamiento del final de ajedrez Rey + Torre vs "
                 "Rey + Peón a partir del dataset KRKPA7, mediante técnicas de análisis "
                 "exploratorio de datos, visualización interactiva y modelado predictivo, "
-                "para identificar los patrones que determinan si las blancas ganan o no "
-                "la partida."
+                "para identificar los patrones que determinan si el peón logra ganar o si "
+                "las blancas lo detienen."
             ),
             html.H3("Objetivos específicos"),
             dbc.Row([
                 dbc.Col(html.Div([
-                    html.H4("1. Caracterizar"),
+                    html.H4("1. Caracterizar", style={"color": "#008080"}),
                     html.P(
                         "Realizar un análisis univariado y bivariado de las 36 "
                         "variables categóricas, identificando su distribución, "
@@ -179,21 +165,20 @@ def layout():
                     ),
                 ], className="krk-stat"), md=6),
                 dbc.Col(html.Div([
-                    html.H4("2. Predecir"),
+                    html.H4("2. Predecir", style={"color": "#40B5A0"}),
                     html.P(
                         "Construir un modelo predictivo que clasifique si una "
-                        "posición termina en victoria de las blancas (won) o no "
+                        "posición termina en victoria del bando del peón (won) o no "
                         "(nowin), evaluado con exactitud, F1, AUC-ROC y validación "
                         "cruzada."
                     ),
-                ], className="krk-stat accent"), md=6),
-            ], className="g-3"),
-        ], className="krk-section"),
-
+                ], className="krk-stat"), md=6),
+            ], className="g-3"), # <-- Aquí faltaba cerrar el Row
+        ]),
+ 
         # ---------- Marco teórico ----------
-        html.Div([
-            html.H2("Marco teórico"),
-
+        seccion("Marco teórico", [
+ 
             html.H3("Finales de ajedrez"),
             html.P(
                 "Los finales han sido estudiados desde dos perspectivas complementarias: "
@@ -205,7 +190,7 @@ def layout():
                 "Las negras, en cambio, obtienen tablas o ganan si coronan el peón, "
                 "ahogan al rey blanco o capturan la torre."
             ),
-
+ 
             html.H3("V de Cramér"),
             html.P(
                 "Dado que todas las variables del dataset son categóricas, no es "
@@ -214,7 +199,7 @@ def layout():
                 "asociación entre dos variables categóricas con valores entre 0 "
                 "(independencia) y 1 (asociación perfecta)."
             ),
-
+ 
             html.Div(
                 dcc.Markdown(
                     r"""
@@ -226,7 +211,7 @@ def layout():
                 ),
                 className="krk-formula",
             ),
-
+ 
             html.P(
                 "Para que la V de Cramér sea válida se requiere que ambas variables "
                 "sean categóricas, que las observaciones sean independientes y que "
@@ -239,7 +224,7 @@ def layout():
                 "la V de Cramér como medida descriptiva se calcula directamente a partir "
                 "del estadístico chi-cuadrado observado, sin requerir corrección."
             ),
-
+ 
             html.P(
                 "Su principal ventaja es que permite comparar asociaciones en tablas "
                 "de contingencia de dimensiones distintas, algo que el coeficiente "
@@ -247,7 +232,7 @@ def layout():
                 "relación de cada predictora con class, y construir la matriz de "
                 "asociación entre predictoras para detectar redundancia."
             ),
-
+ 
             html.H3("Residuos estandarizados"),
             html.P(
                 "Una vez detectada una asociación significativa con la V de Cramér, "
@@ -256,7 +241,7 @@ def layout():
                 "Pearson, que comparan la frecuencia observada con la esperada bajo "
                 "independencia:"
             ),
-
+ 
             html.Div(
                 dcc.Markdown(
                     r"""
@@ -268,7 +253,7 @@ def layout():
                 ),
                 className="krk-formula",
             ),
-
+ 
             html.P(
                 "Un residuo mayor a 2 en valor absoluto indica que esa celda aporta "
                 "significativamente a la asociación, y un residuo mayor a 3 señala "
@@ -278,11 +263,10 @@ def layout():
                 "ajustada de Haberman, que corrige por el tamaño de la tabla y es "
                 "preferible cuando hay más de 2 filas o columnas."
             ),
-        ], className="krk-section krk-section-alt"),
-
+        ], alt=True),
+ 
         # ---------- Metodología ----------
-        html.Div([
-            html.H2("Metodología"),
+        seccion("Metodología", [
             dbc.Row([
                 dbc.Col(html.Div([
                     html.H4("Análisis exploratorio"),
@@ -302,24 +286,42 @@ def layout():
                 dbc.Col(html.Div([
                     html.H4("Modelado predictivo"),
                     html.P(
-                        "Clasificación binaria won/nowin. Métricas: exactitud, "
-                        "precisión, recall, F1, AUC-ROC y validación cruzada."
+                        "Se procederá a construir un modelo de predicción que, a "
+                        "partir de las variables del tablero, clasifique "
+                        "correctamente si una posición termina en victoria del bando "
+                        "del peón (won) o no (nowin), evaluando su desempeño mediante "
+                        "métricas como exactitud, matriz de confusión, F1-score, "
+                        "AUC-ROC y validación cruzada."
                     ),
                 ], className="krk-stat warm"), md=4),
             ], className="g-3"),
-        ], className="krk-section"),
-
+        ]),
+ 
+        # ---------- Modelado Predictivo ----------
+        seccion("Modelado predictivo", [
+            html.P(
+                "Para identificar el modelo que mejor clasifica las posiciones del final de "
+                "ajedrez, se evaluaron cuatro algoritmos candidatos: Regresión logística, "
+                "Árbol de Decisión, Random Forest y CatBoost. Dado que todas las variables "
+                "son categóricas, se codificaron con One-Hot antes de entrenar cada modelo."
+            ),
+            html.P(
+                "Tras evaluar los cuatro modelos con validación cruzada y las métricas de "
+                "desempeño (Accuracy y F1-Score), el mejor modelo fue CatBoost, "
+                "que fue el seleccionado y guardado para producción."
+            ),
+        ], alt=True),
+ 
         # ---------- Dataset ----------
-        html.Div([
-            html.H2("El dataset"),
+        seccion("El dataset", [
             html.P(
                 "KRKPA7 contiene 3.196 posiciones del final Rey + Torre (blancas) vs "
                 "Rey + Peón (negras) en a7, con el peón negro a punto de coronar y el "
                 "tablero visto desde la perspectiva del negro (Shapiro, 1983). Fue "
                 "generado por Alen D. Shapiro en su tesis doctoral de 1983, Structured "
                 "Induction in Expert Systems. Cada posición se describe con 36 "
-                "variables categóricas; la variable objetivo class indica si las "
-                "blancas ganan (won) o no (nowin)."
+                "variables categóricas; la variable objetivo class indica si gana el "
+                "bando del peón (won) o no (nowin)."
             ),
             html.H3("Tabla de variables"),
             dash_table.DataTable(
@@ -341,31 +343,6 @@ def layout():
                 sort_action="native",
                 filter_action="native",
             ),
-        ], className="krk-section krk-section-alt"),
-
-        # ---------- Observación sobre los niveles ----------
-        html.Div([
-            html.H2("Observación sobre los niveles"),
-            html.P(
-                "g y w representan el mismo concepto general (acción o característica "
-                "de las blancas), pero su uso depende de la variable específica:"
-            ),
-            dbc.Row([
-                dbc.Col(html.Div([
-                    html.H4("w — White"),
-                    html.P(
-                        "Se usa cuando la variable indica directamente una acción o "
-                        "posición de las blancas."
-                    ),
-                ], className="krk-stat"), md=6),
-                dbc.Col(html.Div([
-                    html.H4("g — Good"),
-                    html.P(
-                        "Se usa en dwipd para indicar una posición favorable (menor "
-                        "o igual a dos casillas) para las blancas."
-                    ),
-                ], className="krk-stat accent"), md=6),
-            ], className="g-3"),
-        ], className="krk-section"),
-
+        ], alt=True),
+ 
     ], fluid=True)

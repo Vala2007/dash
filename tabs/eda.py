@@ -5,38 +5,19 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from dash import html, dcc, dash_table
 import dash_bootstrap_components as dbc
+from components import colapsable
 from scipy.stats import chi2_contingency
 
 from data.load_data import load_data
-
+from tabs.eda_selectores import selector_tortas, selector_barras
 
 df = load_data()
 vars_predictoras = [c for c in df.columns if c != "class"]
 
-COLORES_CLASS = {"nowin": "#F3BF97", "won": "#1CE0D3"}
-
-tonos_pasteles = [
-    "#B5EAD7", "#E2BEF1", "#A8D8EA", "#FBC5A2",
-    "#C7CEEA", "#FFEAA7", "#FFB6B9"
-]
-
-todas_categorias = sorted(set(
-    valor for var in vars_predictoras for valor in df[var].unique()
-))
-
-colores_personalizados = {
-    cat: tonos_pasteles[i % len(tonos_pasteles)]
-    for i, cat in enumerate(todas_categorias)
-}
-
-
-def cramers_v(x, y):
-    confusion = pd.crosstab(x, y)
-    chi2 = chi2_contingency(confusion)[0]
-    n = confusion.sum().sum()
-    r, c = confusion.shape
-    return np.sqrt(chi2 / (n * (min(r, c) - 1)))
-
+# Nuevos colores Teal & Aqua
+COLORES_CLASS = {"nowin": "#40B5A0", "won": "#008080"} 
+COLORES_BINARIAS = ["#00CED1", "#8BFFFF"]            
+COLORES_TERNARIAS = ["#20B2AA", "#00CED1", "#8BFFFF"]
 
 pares_reales = {
     var: tuple(sorted(df[var].dropna().unique()))
@@ -51,6 +32,14 @@ grupos_vars = {
 }
 
 
+def cramers_v(x, y):
+    confusion = pd.crosstab(x, y)
+    chi2 = chi2_contingency(confusion)[0]
+    n = confusion.sum().sum()
+    r, c = confusion.shape
+    return np.sqrt(chi2 / (n * (min(r, c) - 1)))
+
+
 def figura_dona_target():
     tabla = df["class"].value_counts().reset_index()
     tabla.columns = ["class", "Frecuencia"]
@@ -59,7 +48,6 @@ def figura_dona_target():
     fig = px.bar(
         tabla, x="class", y="Frecuencia", color="class",
         color_discrete_map=COLORES_CLASS,
-        title="Distribución de la variable target",
         labels={"class": "Clase", "Frecuencia": "Frecuencia"},
         template="plotly_white",
         custom_data=["Porcentaje"],
@@ -69,12 +57,12 @@ def figura_dona_target():
     )
     fig.update_layout(
         height=450, width=None, showlegend=False,
-        yaxis=dict(range=[0, tabla["Frecuencia"].max() * 1.15]),
+        yaxis=dict(range=[0, tabla["Frecuencia"].max() * 1.15]), margin=dict(t=20),
     )
     return fig
 
 
-def figura_donas_grupo(vars_grupo, titulo):
+def figura_donas_grupo(vars_grupo, titulo, paleta):
     if len(vars_grupo) == 0:
         return None
 
@@ -95,7 +83,9 @@ def figura_donas_grupo(vars_grupo, titulo):
     for var in vars_grupo:
         tabla = df[var].value_counts().reset_index()
         tabla.columns = ["valor", "n"]
-        colores_usar = [colores_personalizados.get(v, "#999999") for v in tabla["valor"]]
+        
+        # Asignar colores de la paleta por orden
+        colores_usar = [paleta[i % len(paleta)] for i in range(len(tabla))]
 
         fig.add_trace(
             go.Pie(
@@ -104,7 +94,7 @@ def figura_donas_grupo(vars_grupo, titulo):
                 text=tabla["valor"],
                 textposition="inside",
                 textinfo="text",
-                textfont=dict(size=16),
+                textfont=dict(size=16), 
                 marker=dict(colors=colores_usar),
                 hovertemplate="Frecuencia: %{value}<br>Porcentaje: %{percent}<extra></extra>",
                 showlegend=False,
@@ -132,7 +122,7 @@ def figura_donas_grupo(vars_grupo, titulo):
 
     for ann in fig.layout.annotations:
         ann.font.size = 16
-        ann.font.color = "black"
+        #ann.font.color = "black"
         ann.xanchor = "center"
 
     return fig
@@ -147,7 +137,7 @@ def figura_heatmap_class():
         z=[asoc.values],
         x=asoc.index,
         y=["class"],
-        colorscale="Blues",
+        colorscale="Teal", # Escala teal
         zmin=0, zmax=1,
         text=np.round(asoc.values, 2)[np.newaxis, :],
         texttemplate="%{text:.2f}",
@@ -180,14 +170,14 @@ def figura_top5_class():
     fig = px.bar(
         top5, x="cramer", y="Variable", orientation="h",
         color="cramer",
-        color_continuous_scale=[[0.0, "#A8D8EA"], [1.0, "#0D3B66"]],
+        color_continuous_scale=[[0.0, "#8BFFFF"], [1.0, "#008080"]], # Colores teal
         text=top5["cramer"].apply(lambda x: f"{x:.3f}"),
         title="Top 5 variables más relacionadas con class",
     )
     fig.update_traces(
-        textposition="outside",
-        textfont=dict(size=13, color="black"),
-        hovertemplate="<b>%{y}</b><br>Cramér's V: %{x:.3f}<extra></extra>",
+    textposition="outside",
+    textfont=dict(size=13), 
+    hovertemplate="<b>%{y}</b><br>Cramér's V: %{x:.3f}<extra></extra>",
     )
     fig.update_layout(
         height=400, showlegend=False,
@@ -242,7 +232,7 @@ def figura_barras_por_clase():
             fig.add_trace(
                 go.Bar(
                     x=x_vals, y=y_vals, name=clase,
-                    marker_color=COLORES_CLASS[clase],
+                    marker_color=COLORES_CLASS[clase], 
                     legendgroup=clase,
                     showlegend=(row == 1 and col == 1),
                     customdata=customdata,
@@ -257,8 +247,19 @@ def figura_barras_por_clase():
             tickvals=posiciones, ticktext=categorias,
             range=[-0.5, n_cats - 0.5],
             row=row, col=col, tickfont=dict(size=10),
+            showgrid=True,
+            gridcolor="rgba(128, 128, 128, 0.2)",  
+            zeroline=True,
+            zerolinecolor="rgba(128, 128, 128, 0.4)"
         )
-        fig.update_yaxes(title_text="", row=row, col=col, tickfont=dict(size=9))
+        fig.update_yaxes(
+            title_text="", 
+            row=row, col=col, tickfont=dict(size=9),
+            showgrid=True,
+            gridcolor="rgba(128, 128, 128, 0.2)",
+            zeroline=True,
+            zerolinecolor="rgba(128, 128, 128, 0.4)"
+        )
 
         col += 1
         if col > n_cols:
@@ -285,11 +286,9 @@ def figura_barras_por_clase():
 
     for ann in fig.layout.annotations:
         ann.font.size = 12
-        ann.font.color = "black"
         ann.xanchor = "center"
 
     return fig
-
 
 def figura_heatmap_predictoras():
     n_pred = len(vars_predictoras)
@@ -303,7 +302,7 @@ def figura_heatmap_predictoras():
         z=mat,
         x=vars_predictoras,
         y=vars_predictoras,
-        colorscale="Blues",
+        colorscale="Teal", # Escala teal
         zmin=0, zmax=1,
         text=np.round(mat, 2),
         texttemplate="%{text:.2f}",
@@ -337,14 +336,14 @@ def figura_top5_pares():
     fig = px.bar(
         pares, x="cramer", y="par", orientation="h",
         color="cramer",
-        color_continuous_scale=[[0.0, "#D1F2FD"], [1.0, "#0D3B66"]],
+        color_continuous_scale=[[0.0, "#8BFFFF"], [1.0, "#008080"]],
         text=pares["cramer"].apply(lambda x: f"{x:.3f}"),
         title="Top 5 pares de variables predictoras con mayor relación",
         labels={"cramer": "Cramér's V", "par": ""},
     )
     fig.update_traces(
         textposition="outside",
-        textfont=dict(size=12, color="black"),
+        textfont=dict(size=12),
         hovertemplate="%{y}<br>Cramér's V: %{x:.3f}<extra></extra>",
     )
     fig.update_layout(
@@ -384,48 +383,36 @@ def layout():
     fig_target = figura_dona_target()
     fig_heat_class = figura_heatmap_class()
     fig_top5_class = figura_top5_class()
-    fig_barras = figura_barras_por_clase()
     fig_heat_pred = figura_heatmap_predictoras()
     fig_top5_pares = figura_top5_pares()
     tabla_cont = tabla_contingencia_completa()
 
-    figuras_grupos = []
-    for nombre, vars_grupo in grupos_vars.items():
-        if len(vars_grupo) > 0:
-            titulo = f"Variables con niveles {nombre} ({len(vars_grupo)})"
-            fig = figura_donas_grupo(vars_grupo, titulo)
-            figuras_grupos.append((nombre, fig))
-
     return dbc.Container([
 
-        html.H2("EDA — KRKPA7"),
-        html.H3("Análisis de la variable target class"),
+        html.H2("Análisis Exploratorio de Datos"),
+        colapsable("Análisis de la variable target class", [
         dbc.Row([
             dbc.Col(dbc.Card(dbc.CardBody(dcc.Graph(figure=fig_target))), md=6),
             dbc.Col(dbc.Card(dbc.CardBody([
                 html.P(
-                    "En 1669 partidas, el 52.2%, resultó won, es decir que las "
-                    "blancas ganaron, y en 1527 partidas, el 47.8%, resultó nowin. "
+                    "En 1669 partidas, el 52.2%, resultó won, es decir que el "
+                    "bando del peón (negras) ganó, y en 1527 partidas, el 47.8%, resultó "
+                    "nowin (las blancas detuvieron al peón). "
                     "La diferencia entre ambas clases es de solo 4.4 puntos "
                     "porcentuales, lo que indica que el dataset no tiene un sesgo "
                     "significativo hacia ninguna clase."
                 ),
             ])), md=6),
         ], className="g-3 mb-4"),
+        ]),
 
-        html.H3("Análisis de las variables independientes"),
+        colapsable("Análisis de las variables independientes", [
 
         dbc.Card(dbc.CardBody([
             html.H5("Distribución de cada variable predictora por grupo",
                     className="card-title"),
             *[
-                dbc.Card(
-                    dbc.CardBody([
-                        dcc.Graph(figure=fig, config={"displayModeBar": False}),
-                    ]),
-                    className="mb-4"
-                )
-                for nombre, fig in figuras_grupos
+                selector_tortas(),
             ],
             html.P(
                 "whxbp: la torre blanca ataca al peón negro en el 38% de las "
@@ -443,19 +430,20 @@ def layout():
             ),
             html.P(
                 "Variables del rey blanco (wk...): el rey blanco rara vez bloquea a "
-                "su propia torre (wkblk: 88.8% falso) o se encuentra en a8 "
-                "(wkna8: 96.2% falso). En un 36.6% de posiciones el rey blanco puede "
+                "su propia torre (wkblk: 88.8% falso) o se encuentra en la fila 8 "
+                "(wkon8: 96.2% falso). En un 36.6% de posiciones el rey blanco puede "
                 "atacar la casilla crítica b7 (wkxcr)."
             ),
             html.P(
                 "Variables del rey negro (bk...): está bajo presión en un porcentaje "
                 "significativo de posiciones, en el 37.9% está en jaque (bknck), en "
-                "el 37.2% está sobrecargado (bkovl) y en el 26.6% está en posición "
+                "el 37.2% está sobrecargado (bkovl) y en el 73.4% está en posición "
                 "de posible clavada (bkpos)."
             ),
         ]), className="mb-4"),
+        ]),
 
-        html.H3("Análisis bivariado class vs independientes"),
+        colapsable("Análisis bivariado class vs independientes", [
 
         dbc.Row(dbc.Col(dbc.Card(dbc.CardBody([
             html.H5("Relación de cada predictora con class (Cramér's V)",
@@ -464,7 +452,7 @@ def layout():
             html.P(
                 "El heatmap muestra la fuerza de la relación entre cada variable "
                 "predictora y la variable objetivo class. Los valores más altos "
-                "(azul oscuro) indican una relación más fuerte con el resultado del "
+                "(teal oscuro) indican una relación más fuerte con el resultado del "
                 "final de ajedrez."
             ),
         ]))), className="mb-4"),
@@ -483,30 +471,25 @@ def layout():
 
         dbc.Row(dbc.Col(dbc.Card(dbc.CardBody([
             html.H5("Distribución de variables por clase", className="card-title"),
-            dcc.Graph(figure=fig_barras, config={"displayModeBar": False}),
-            html.H6("Factores relacionados con la victoria (won)", className="mt-3"),
+            selector_barras(),
+            html.H6("Factores relacionados con la victoria (won)", className="mt-3", style={"color": "inherit"}),
             html.Ul([
                 html.Li("katri = w: la proporción de won (20.9%) es más del triple que en nowin (6.4%)."),
                 html.Li("rkxwp = t: 23.9% won vs 15.8% nowin."),
                 html.Li("bkpos = t: ligeramente más común en won (79.6%) que en nowin (66.6%)."),
-            ]),
-            html.H6("Factores relacionados con la no victoria (nowin)"),
+            ], style={"color": "inherit"}),
+            html.H6("Factores relacionados con la no victoria (nowin)", style={"color": "inherit"}),
             html.Ul([
                 html.Li("rimmx = f: se da el 100% de los casos de nowin."),
                 html.Li("bkna8 = t: 5 veces más frecuente en nowin (10.2%) que en won (1.2%)."),
                 html.Li("bknck = t: 2.7 veces más frecuente en nowin (56.5%) que en won (21.0%)."),
                 html.Li("wkxbp = t: 2.5 veces más frecuente en nowin (31.8%) que en won (12.6%)."),
                 html.Li("wxqsq = t: 3.5 veces más frecuente en nowin (48.7%) que en won (13.7%)."),
-            ]),
-            html.H6("Variables con poca diferencia"),
-            html.P(
-                "wkblk, wknwy, dsopp, qxmsq, reskd, reskr y btoeg presentan "
-                "distribuciones muy similares entre won y nowin, lo que indica que "
-                "podrían no ser útiles para predecir el resultado."
-            ),
+            ], style={"color": "inherit"}),
         ]))), className="mb-4"),
+        ]),
 
-        html.H3("Relaciones entre variables predictoras"),
+        colapsable("Relaciones entre variables predictoras", [
 
         dbc.Row(dbc.Col(dbc.Card(dbc.CardBody([
             html.H5("Matriz de asociación entre predictoras", className="card-title"),
@@ -530,8 +513,9 @@ def layout():
                 "miden conceptos relacionados desde diferentes perspectivas."
             ),
         ]))), className="mb-4"),
+        ]),
 
-        html.H3("Conclusiones"),
+        colapsable("Conclusiones", [
         dbc.Card(dbc.CardBody([
             html.Ol([
                 html.Li("La variable objetivo class presenta una distribución prácticamente balanceada (52.2% won, 47.8% nowin)."),
@@ -543,5 +527,6 @@ def layout():
                 html.Li("El resultado del final depende de la combinación de múltiples factores: seguridad de la torre (rimmx), control del punto de intersección (katri) y posición del rey negro (bkna8, bknck)."),
             ]),
         ])),
+        ]),
 
     ], fluid=True)
