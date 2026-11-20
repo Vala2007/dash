@@ -3,7 +3,7 @@ import dash_bootstrap_components as dbc
 from dash import html, dcc, Input, Output, State, clientside_callback
 
 from components import navbar, footer, page_header
-from tabs import bienvenida, introduccion, eda, modelo, referencias
+from tabs import bienvenida, introduccion, eda, modelo, referencias, equipo
 import chatbot  # registra los callbacks del asistente
 
 FUENTES = "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,800&display=swap"
@@ -22,8 +22,9 @@ PAGES = {
     "/eda":    ("♝", "EDA", "Qué dicen las 36 variables sobre el resultado", eda.layout),
     "/modelo": ("♛", "Modelado predictivo", "CatBoost y un predictor de posiciones", modelo.layout),
     "/refs":   ("♜", "Referencias", "Bibliografía del proyecto", referencias.layout),
+    "/equipo": ("♟", "Equipo", "Quiénes hicimos el proyecto", equipo.layout),
 }
-NAV_LABELS = {"/intro": "Introducción", "/eda": "EDA", "/modelo": "Modelado predictivo", "/refs": "Referencias"}
+NAV_LABELS = {"/intro": "Introducción", "/eda": "EDA", "/modelo": "Modelado predictivo", "/refs": "Referencias", "/equipo": "Equipo"}
 NAV_LINKS = [(NAV_LABELS[ruta], ruta) for ruta in PAGES]
 
 # Se construyen una sola vez para que cambiar de pestaña sea instantáneo

@@ -1,0 +1,31 @@
+/* ---------- Pestaña Equipo ---------- */
+.krk-team-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 300px));
+    gap: 24px; justify-content: center; margin-top: 24px;
+}
+.krk-member {
+    text-align: center; padding: 30px 24px;
+    background: var(--card); border: 1px solid var(--border); border-radius: 20px;
+    box-shadow: var(--shadow); transition: transform .2s ease;
+}
+.krk-member:hover { transform: translateY(-4px); }
+.krk-member-photo {
+    width: 150px; height: 150px; border-radius: 50%; object-fit: cover; margin: 0 auto 16px;
+    display: block; border: 3px solid var(--accent-2);
+}
+.krk-member-initials {
+    display: flex; align-items: center; justify-content: center;
+    background: var(--primary-soft); color: var(--heading);
+    font-family: "Fraunces", Georgia, serif; font-size: 2.6rem; font-weight: 800;
+}
+.krk-member-name { margin: 0 0 4px; font-size: 1.3rem; }
+.krk-member-role { margin: 0 0 16px; color: var(--muted); font-size: .95rem; }
+.krk-linkedin {
+    display: inline-flex; align-items: center; gap: 8px; padding: 8px 18px; border-radius: 999px;
+    background: var(--primary); color: #fff !important; text-decoration: none !important; font-weight: 600;
+}
+.krk-linkedin:hover { filter: brightness(1.1); }
+.krk-linkedin-badge {
+    display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px;
+    border-radius: 4px; background: #fff; color: var(--primary); font-weight: 800; font-size: .85rem;
+}
