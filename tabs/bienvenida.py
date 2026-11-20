@@ -3,6 +3,10 @@ import dash_bootstrap_components as dbc
 
 from components import stat_card, feature_card
 
+# >>> PON AQUÍ LOS LINKS DE TUS LIBROS (se abren en una pestaña nueva)
+URL_JUPYTER_BOOK = "file:///C:/Users/ASUS/Documents/pdata/jbook_pdata/docs/_build/html/index.html"
+URL_BOOKDOWN = "https://vala2007.github.io/rdata/"
+
 # (símbolo, color, columna, fila, retraso de animación)
 # Fila 0 = rank 8, columna 0 = columna a  ->  el peón negro está en a7 (col 0, fila 1)
 # Convención UCI: peón y rey negros; rey y torre blancos.
@@ -105,6 +109,24 @@ def layout():
                                  "Bibliografía usada en el proyecto.", "/refs"),
                 ],
                 className="krk-feature-grid",
+            ),
+
+            # ---------- Informes completos (enlaces externos) ----------
+            html.Div(
+                [
+                    html.A(
+                        html.H4("Jupyter Book"),
+                        href=URL_JUPYTER_BOOK, target="_blank", rel="noopener noreferrer",
+                        className="krk-feature",
+                    ),
+                    html.A(
+                        html.H4("Bookdown"),
+                        href=URL_BOOKDOWN, target="_blank", rel="noopener noreferrer",
+                        className="krk-feature",
+                    ),
+                ],
+                style={"display": "grid", "gridTemplateColumns": "repeat(auto-fit, minmax(260px, 1fr))",
+                       "gap": "18px", "marginTop": "18px"},
             ),
         ]
     )
