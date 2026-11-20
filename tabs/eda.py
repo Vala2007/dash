@@ -431,7 +431,7 @@ def layout():
             html.P(
                 "Variables del rey blanco (wk...): el rey blanco rara vez bloquea a "
                 "su propia torre (wkblk: 88.8% falso) o se encuentra en la fila 8 "
-                "(wkon8: 96.2% falso). En un 36.6% de posiciones el rey blanco puede "
+                "(wkna8: 96.2% falso). En un 36.6% de posiciones el rey blanco puede "
                 "atacar la casilla crítica b7 (wkxcr)."
             ),
             html.P(
@@ -439,6 +439,61 @@ def layout():
                 "significativo de posiciones, en el 37.9% está en jaque (bknck), en "
                 "el 37.2% está sobrecargado (bkovl) y en el 73.4% está en posición "
                 "de posible clavada (bkpos)."
+            ),
+        ]), className="mb-4"),
+        ]),
+
+        colapsable("Verificación de supuestos y variables eliminadas", [
+
+        dbc.Card(dbc.CardBody([
+            html.P(
+                "La V de Cramér se calcula a partir del chi-cuadrado, que exige que las tablas de "
+                "contingencia tengan frecuencias esperadas adecuadas: al menos el 80 % de las celdas "
+                "con frecuencia esperada ≥ 5 y ninguna por debajo de 1. Se verificó este supuesto antes "
+                "de interpretar las asociaciones."
+            ),
+            html.P(
+                "Frente a class, 35 de las 36 variables predictoras cumplen el criterio. La única "
+                "excepción es spcop, cuyo nivel t aparece en solo 1 de las 3.196 posiciones (0.03 %). "
+                "Al ser una variable prácticamente constante, no aporta información a la relación con "
+                "la clase."
+            ),
+            html.P(
+                "Entre predictoras se evaluaron 630 pares: 508 cumplen los supuestos y 122 no. Los que "
+                "no cumplen involucran sistemáticamente al menos una de las 14 variables con niveles "
+                "minoritarios (menos del 10 % de las posiciones), en particular cuatro con frecuencias "
+                "casi nulas. Al cruzar dos de estas variables raras, las celdas quedan con frecuencias "
+                "esperadas muy por debajo de 5, lo que invalida el chi-cuadrado clásico."
+            ),
+            html.H5("Variables eliminadas: nivel con menos del 1 % de las posiciones",
+                    className="card-title mt-3"),
+            dash_table.DataTable(
+                data=[
+                    {"Variable": "spcop", "Qué mide": "Oposición especial",
+                     "% de las posiciones": "0.03 %", "Posiciones": 1},
+                    {"Variable": "skach", "Qué mide": "Clavada tras jaques",
+                     "% de las posiciones": "0.34 %", "Posiciones": 11},
+                    {"Variable": "hdchk", "Qué mide": "Jaque oculto",
+                     "% de las posiciones": "0.47 %", "Posiciones": 15},
+                    {"Variable": "reskd", "Qué mide": "Re-clavada diferida",
+                     "% de las posiciones": "0.81 %", "Posiciones": 26},
+                ],
+                columns=[{"name": c, "id": c} for c in
+                         ["Variable", "Qué mide", "% de las posiciones", "Posiciones"]],
+                style_table={"overflowX": "auto"},
+                style_cell={
+                    "textAlign": "left", "padding": "10px 12px", "fontSize": "13px",
+                    "fontFamily": "Inter, Segoe UI, sans-serif",
+                    "backgroundColor": "transparent", "color": "inherit",
+                    "border": "1px solid rgba(0, 0, 0, 0.06)",
+                },
+            ),
+            html.P(
+                "Criterio: se eliminan las variables cuyo nivel menos frecuente representa menos del "
+                "1 % de las posiciones (spcop, skach, hdchk y reskd). Además de invalidar el "
+                "chi-cuadrado, casi no varían, por lo que no distinguen una posición de otra. "
+                "Quedan 32 variables predictoras, que son las que se usan en el resto del EDA y en el modelo.",
+                className="mt-3 mb-0",
             ),
         ]), className="mb-4"),
         ]),

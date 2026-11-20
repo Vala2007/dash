@@ -108,30 +108,6 @@ def fig_roc(roc):
     return fig
 
 
-def fig_permutacion(perm):
-    variables = [p["variable"] for p in perm]
-    fig = go.Figure(go.Bar(
-        x=[p["media"] for p in perm], y=variables, orientation="h", marker_color=COLOR_WON,
-        error_x=dict(type="data", array=[p["sd"] for p in perm], color="grey", thickness=1.5),
-        hovertemplate="<b>%{y}</b><br>Caída del F1: %{x:.3f}<extra></extra>",
-    ))
-    fig.update_yaxes(autorange="reversed")
-    fig.update_xaxes(title="Caída del F1 al permutar la variable")
-    fig.update_layout(title="Importancia por permutación (top 10)")
-    return fig
-
-
-def fig_estabilidad(est):
-    acc = est["accuracy"]
-    fig = go.Figure(go.Histogram(x=acc, nbinsx=8, marker=dict(color=COLOR_NOWIN, line=dict(color="white", width=1)),
-                                 hovertemplate="Accuracy: %{x}<br>Particiones: %{y}<extra></extra>"))
-    fig.add_vline(x=float(np.mean(acc)), line_color=COLOR_WON, line_width=3)
-    fig.update_xaxes(title="Accuracy de prueba")
-    fig.update_yaxes(title="Particiones")
-    fig.update_layout(title="Variación de la exactitud con 10 particiones (línea = media)")
-    return fig
-
-
 # ------------------------------------------------------------------- bloques
 def _bloque_comparacion(r):
     filas = [{"Modelo": m["Modelo"], "Accuracy": f"{m['Accuracy']:.4f}", "F1-Score": f"{m['F1']:.4f}"}
@@ -226,80 +202,6 @@ def _bloque_test(r):
     ])
 
 
-def _bloque_permutacion(r):
-    t5 = r["top5"]
-    filas = [{"#": str(i + 1), "Top 5 V de Cramér (EDA)": a, "Top 5 permutación (modelo)": b}
-             for i, (a, b) in enumerate(zip(t5["cramer"], t5["permutacion"]))]
-    return colapsable("5. Interpretabilidad: ¿qué variables usa el modelo?", [
-        _tarjeta(
-            _p("La importancia por permutación mide cuánto cae el F1 en la prueba al barajar al azar los valores de "
-               "una variable: si el modelo depende de ella, el desempeño empeora."),
-            dcc.Graph(figure=_figura_lista(fig_permutacion(r["permutacion"]), 420),
-                      config={"displayModeBar": False}),
-            _p("Tres variables concentran casi toda la importancia: bknck (≈ 0.195), rimmx (≈ 0.185) y "
-               "wxqsq (≈ 0.168). Les siguen, muy por debajo, bkpos, katri y wkxbq (≈ 0.02–0.04)."),
-        ),
-        _tarjeta(
-            html.H5("¿Coincide con lo que mostró el EDA?", className="card-title"),
-            _tabla(filas, ["#", "Top 5 V de Cramér (EDA)", "Top 5 permutación (modelo)"]),
-            _p("Cuatro de las cinco variables principales (rimmx, wxqsq, bknck y katri) coinciden con las de mayor "
-               "V de Cramér del EDA. La diferencia es que el modelo usa bkpos en lugar de wkxbp: wkxbp comparte "
-               "información con whxbp y wkxcr (V de 0.67 y 0.56), así que el modelo puede apoyarse en cualquiera "
-               "de ellas. La permutación mide cuánto depende el modelo de una variable, no en qué dirección empuja; "
-               "esa lectura sigue siendo la del EDA (rimmx = t solo aparece en posiciones won)."),
-        ),
-    ])
-
-
-def _bloque_estabilidad(r):
-    e = r["estabilidad"]
-    def resumen(v):
-        v = np.array(v, dtype=float)
-        return v.mean(), v.std(ddof=1), v.min(), v.max()
-    a, f = resumen(e["accuracy"]), resumen(e["f1"])
-    filas = [{"": nombre, "accuracy": f"{a[i]:.4f}", "f1": f"{f[i]:.4f}"}
-             for i, nombre in enumerate(["mean", "std", "min", "max"])]
-    return colapsable("6. Estabilidad ante distintas particiones", [
-        _tarjeta(
-            _p("La exactitud de prueba depende de qué 20 % de las posiciones cayó en la prueba. Para ver cuánto "
-               "varía, se repite la partición con 10 semillas distintas, reentrenando el pipeline cada vez."),
-            dcc.Graph(figure=_figura_lista(fig_estabilidad(e), 330), config={"displayModeBar": False}),
-            _tabla(filas, ["", "accuracy", "f1"]),
-            _p(f"Con 10 particiones distintas la exactitud media fue {a[0]:.4f} (desviación {a[1]:.4f}), con valores "
-               f"entre {a[2]:.4f} y {a[3]:.4f}. Coincide con la validación cruzada (≈ 0.991) y muestra que el "
-               "0.9953 de la partición original está en el extremo alto del rango: el desempeño esperado del "
-               "modelo es de ≈ 99.1 %."),
-        ),
-    ])
-
-
-def _bloque_conclusiones():
-    return colapsable("7. Conclusiones y limitaciones", [
-        _tarjeta(
-            html.Ul([
-                html.Li("CatBoost obtuvo el F1 medio más alto en validación cruzada (0.9916 ± 0.0030) y el mejor "
-                        "AUC-ROC (0.9995). Supera de forma significativa a la regresión logística y, "
-                        "marginalmente, a Random Forest; no se distingue del Árbol de Decisión."),
-                html.Li("En prueba: Accuracy = 0.9953, F1 = 0.9955 y AUC-ROC ≈ 1, con 3 errores en 640 posiciones."),
-                html.Li("Con 10 particiones distintas la exactitud media es 0.9914: el desempeño esperado es ≈ 99.1 %."),
-                html.Li("Las variables que más pesan son bknck, rimmx y wxqsq, coherentes con el EDA."),
-            ]),
-            html.H5("Limitaciones", className="mt-3"),
-            html.Ul([
-                html.Li("Las diferencias entre CatBoost y los otros modelos de árboles son pequeñas y no se "
-                        "ajustaron hiperparámetros."),
-                html.Li("Las variables fueron diseñadas por Shapiro como predicados de conocimiento experto sobre el "
-                        "final; no son mediciones libres de partidas reales. Esto explica la alta separabilidad de "
-                        "las clases: el resultado describe qué tan bien se aprende esa codificación experta y no "
-                        "debe extrapolarse a partidas reales."),
-                html.Li("Se usan los colores de UCI (peón negro, torre blanca) y se lee won como «gana el bando del "
-                        "peón», porque es lo que indican los datos (todas las posiciones nowin tienen rimmx = f). "
-                        "Esto afecta la interpretación de las variables, no el desempeño del modelo."),
-            ]),
-        ),
-    ])
-
-
 def _figura_lista(fig, alto):
     """Aplica el estilo común (fondo transparente, márgenes, altura) a una figura."""
     fig.update_layout(
@@ -334,7 +236,4 @@ def seccion_evaluacion():
         _bloque_cv(r),
         _bloque_wilcoxon(r),
         _bloque_test(r),
-        _bloque_permutacion(r),
-        _bloque_estabilidad(r),
-        _bloque_conclusiones(),
     ], className="krk-section")
