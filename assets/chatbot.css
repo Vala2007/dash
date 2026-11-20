@@ -31,10 +31,10 @@
 .krk-msg-bot { align-self: flex-start; background: var(--primary-soft); color: var(--text); border-bottom-left-radius: 4px; }
 .krk-msg-pensando { opacity: .7; font-style: italic; }
 
-.krk-chat-chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 14px 8px; }
+.krk-chat-chips { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; padding: 4px 0 2px; }
 .krk-chat-chip {
     border: 1px solid var(--border); background: transparent; color: var(--text);
-    border-radius: 999px; padding: 4px 10px; font-size: .78rem; cursor: pointer;
+    border-radius: 14px; padding: 5px 11px; font-size: .8rem; cursor: pointer; text-align: left;
 }
 .krk-chat-chip:hover { background: var(--primary-soft); }
 
@@ -47,3 +47,10 @@
     border: 0; border-radius: 12px; padding: 8px 14px; cursor: pointer;
     background: var(--primary); color: #fff; font-weight: 600;
 }
+
+.krk-chat-acciones { display: flex; align-items: center; gap: 10px; }
+.krk-chat-nuevo {
+    border: 1px solid var(--border); background: transparent; color: var(--text);
+    border-radius: 999px; padding: 2px 10px; font-size: .78rem; cursor: pointer;
+}
+.krk-chat-nuevo:hover { background: var(--primary-soft); }
