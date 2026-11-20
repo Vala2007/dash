@@ -4,6 +4,7 @@ from dash import html, dcc, Input, Output, State, clientside_callback
 
 from components import navbar, footer, page_header
 from tabs import bienvenida, introduccion, eda, modelo, referencias
+import chatbot  # registra los callbacks del asistente
 
 FUENTES = "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,800&display=swap"
 
@@ -49,6 +50,7 @@ app.layout = html.Div([
     navbar(NAV_LINKS),
     html.Main(id="page-content", className="krk-shell"),
     footer(),
+    chatbot.widget(),
 ])
 
 

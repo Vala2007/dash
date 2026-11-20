@@ -7,6 +7,7 @@ import dash_bootstrap_components as dbc
 from dash import ALL, Input, Output, State, callback, ctx, html, no_update
  
 from components import stat_card
+from tabs.evaluacion import seccion_evaluacion
  
 # Significado de cada variable (convención UCI, opción B), para la ayuda bajo cada selector
 DEFINICIONES = {
@@ -215,6 +216,8 @@ def layout():
             ),
             _tarjetas_metricas(meta),
         ], className="krk-section krk-section-alt"),
+ 
+        seccion_evaluacion(),
  
         html.Div([
             html.H2("Predecir una posición"),

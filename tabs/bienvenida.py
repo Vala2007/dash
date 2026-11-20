@@ -7,9 +7,9 @@ from components import stat_card, feature_card
 # Fila 0 = rank 8, columna 0 = columna a  ->  el peón negro está en a7 (col 0, fila 1)
 # Convención UCI: peón y rey negros; rey y torre blancos.
 PIEZAS = [
-    ("♚", "blanca", 2, 3, "0s"),
-    ("♜", "blanca", 4, 6, ".7s"),
-    ("♚", "negra", 5, 1, "1.4s"),
+    ("♚", "blanca", 2, 2, "0s"),
+    ("♜", "blanca", 5, 0, ".7s"),
+    ("♚", "negra", 1, 4, "1.4s"),
     ("♟", "negra", 0, 1, "2.1s"),
 ]
 

@@ -239,24 +239,28 @@ a:focus-visible, button:focus-visible {
 }
 .krk-stat:hover { transform: translateY(-3px); }
 
-/* KPI: mosaico relleno, centrado, para las cifras clave */
+/* KPI: mosaico suave, centrado, para las cifras clave */
 .krk-kpi {
     height: 100%; text-align: center; padding: 26px 18px; border-radius: 20px;
-    color: #F0FFFF; box-shadow: var(--shadow);
-    background: linear-gradient(145deg, #004D4D 0%, #008080 100%);
-    border: 1px solid rgba(139, 255, 255, .18);
+    color: var(--text); box-shadow: var(--shadow);
+    background: linear-gradient(145deg, #B4DAD6 0%, #A2CFCB 100%);
+    border: 1px solid rgba(0, 77, 77, .14);
     transition: transform .2s ease;
+}
+body.dark-mode .krk-kpi {
+    background: linear-gradient(145deg, #0A4244 0%, #0D5558 100%);
+    border: 1px solid rgba(139, 255, 255, .12);
 }
 .krk-kpi:hover { transform: translateY(-3px); }
 .krk-kpi h4 {
-    font-family: "Fraunces", Georgia, serif; font-size: 2.6rem; font-weight: 800;
-    line-height: 1; margin: 0; color: #F0FFFF !important;
+    font-family: "Fraunces", Georgia, serif; font-size: 2.2rem; font-weight: 800;
+    line-height: 1; margin: 0; color: var(--heading) !important;
 }
 .krk-kpi h4::after {
     content: ""; display: block; width: 34px; height: 3px; margin: 12px auto 10px;
-    border-radius: 2px; background: #8BFFFF;
+    border-radius: 2px; background: var(--primary);
 }
-.krk-kpi p { margin: 0; color: rgba(224, 255, 255, .9); font-size: .95rem; line-height: 1.4; }
+.krk-kpi p { margin: 0; color: var(--text); opacity: .85; font-size: .95rem; line-height: 1.4; }
 .krk-stat h4 {
     color: var(--accent) !important; font-size: 2rem; font-weight: 800;
     line-height: 1.05; margin-bottom: 6px;
