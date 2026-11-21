@@ -15,7 +15,7 @@ MIEMBROS = [
         "nombre": "Valamy Donado",
         "rol": "Integrante del proyecto",
         "foto": "valamy",
-        "linkedin": "https://www.linkedin.com/in/TU_PERFIL_VALAMY/",
+        "linkedin": "https://www.linkedin.com/in/valamy-donado-gorut-3a9521338/",
     },
     {
         "nombre": "Abraham Navarro",
