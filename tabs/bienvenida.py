@@ -3,6 +3,7 @@ import dash_bootstrap_components as dbc
 
 from components import stat_card, feature_card
 
+VIDEO_ID = "dJGQwctenVM"
 URL_VIDEO = "https://youtu.be/dJGQwctenVM"
 # >>> PON AQUÍ LOS LINKS DE TUS LIBROS (se abren en una pestaña nueva)
 URL_JUPYTER_BOOK = "file:///C:/Users/ASUS/Documents/pdata/jbook_pdata/docs/_build/html/index.html"
@@ -78,13 +79,17 @@ def layout():
                                 className="krk-welcome-lead",
                                 style={"fontSize": "0.95rem", "opacity": 0.85},
                             ),
-                                                        html.Div(
-                                html.A(
-                                    "▶ Ver video en YouTube",
-                                    href=URL_VIDEO, target="_blank", rel="noopener noreferrer",
-                                    className="krk-btn krk-btn-primary",
+                            html.Div(
+                                html.Iframe(
+                                    src=f"https://www.youtube.com/embed/{VIDEO_ID}",
+                                    title="Video del proyecto KRKPA7",
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture",
+                                    style={"position": "absolute", "top": 0, "left": 0,
+                                           "width": "100%", "height": "100%", "border": 0},
                                 ),
-                                className="krk-cta-row",
+                                style={"position": "relative", "width": "100%", "aspectRatio": "16 / 9",
+                                       "marginTop": "22px", "borderRadius": "16px", "overflow": "hidden",
+                                       "boxShadow": "var(--shadow)"},
                             ),
                         ],
                         className="krk-welcome-text",
