@@ -3,6 +3,7 @@ import dash_bootstrap_components as dbc
 
 from components import stat_card, feature_card
 
+URL_VIDEO = "https://youtu.be/dJGQwctenVM"
 # >>> PON AQUÍ LOS LINKS DE TUS LIBROS (se abren en una pestaña nueva)
 URL_JUPYTER_BOOK = "file:///C:/Users/ASUS/Documents/pdata/jbook_pdata/docs/_build/html/index.html"
 URL_BOOKDOWN = "https://vala2007.github.io/rdata/"
@@ -76,6 +77,14 @@ def layout():
                                 ],
                                 className="krk-welcome-lead",
                                 style={"fontSize": "0.95rem", "opacity": 0.85},
+                            ),
+                                                        html.Div(
+                                html.A(
+                                    "▶ Ver video en YouTube",
+                                    href=URL_VIDEO, target="_blank", rel="noopener noreferrer",
+                                    className="krk-btn krk-btn-primary",
+                                ),
+                                className="krk-cta-row",
                             ),
                         ],
                         className="krk-welcome-text",
